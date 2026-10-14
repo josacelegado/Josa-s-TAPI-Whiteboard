@@ -18,7 +18,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // Your personal Google Apps Script Web App URL
+        // Personal Google Apps Script Web App Endpoint
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgs37feS6Rwh8pb2F3YOY02gwKWzaeFVcrKm9wUJMqmWBEksFB0aMFpXkpE2abmnmF/exec";
 
         function Whiteboard() {
@@ -44,7 +44,7 @@
                 }
             };
 
-            // Save updated tasks back to Google Sheet
+            // Save updated tasks back to Google Sheet with text/plain headers to avoid CORS blocks
             const saveTodosToSheet = async (updatedTodos) => {
                 if (!APPS_SCRIPT_URL) return;
                 setIsSyncing(true);
@@ -52,8 +52,7 @@
                 try {
                     await fetch(APPS_SCRIPT_URL, {
                         method: "POST",
-                        mode: "no-cors",
-                        headers: { "Content-Type": "application/json" },
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ todos: updatedTodos })
                     });
                 } catch (err) {
