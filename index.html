@@ -35,7 +35,9 @@
                 try {
                     const res = await fetch(APPS_SCRIPT_URL);
                     const data = await res.json();
-                    setTodos(data);
+                    if (Array.isArray(data)) {
+                        setTodos(data);
+                    }
                 } catch (err) {
                     console.error("Failed to fetch tasks:", err);
                     setSyncError("Sync failed. Check connection.");
@@ -44,16 +46,22 @@
                 }
             };
 
-            // Save updated tasks back to Google Sheet with text/plain headers to avoid CORS blocks
+            // Save updated tasks using URLSearchParams + no-cors to bypass browser CORS blocks
             const saveTodosToSheet = async (updatedTodos) => {
                 if (!APPS_SCRIPT_URL) return;
                 setIsSyncing(true);
                 setSyncError(null);
                 try {
+                    const formData = new URLSearchParams();
+                    formData.append("payload", JSON.stringify({ todos: updatedTodos }));
+
                     await fetch(APPS_SCRIPT_URL, {
                         method: "POST",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ todos: updatedTodos })
+                        mode: "no-cors",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: formData.toString()
                     });
                 } catch (err) {
                     console.error("Failed to save tasks:", err);
